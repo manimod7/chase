@@ -1,0 +1,7 @@
+data/
+docs/
+pipeline/
+tests/
+**/__pycache__
+**/.pytest_cache
+*.zip

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chase: live win probability for T20 cricket</title>
+<meta name="description" content="Ball-by-ball win probability for T20 cricket, with a reason for every big swing and a public calibration report.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="mark" href="#" aria-label="Chase home"><span class="mark-ball" aria-hidden="true"></span>Chase</a>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="t-replay" aria-controls="v-replay" aria-selected="true">Replay</button>
+      <button role="tab" id="t-quality" aria-controls="v-quality" aria-selected="false" tabindex="-1">Model quality</button>
+      <button role="tab" id="t-whatif" aria-controls="v-whatif" aria-selected="false" tabindex="-1">What if</button>
+      <button role="tab" id="t-live" aria-controls="v-live" aria-selected="false" tabindex="-1" hidden>Live</button>
+      <button role="tab" id="t-about" aria-controls="v-about" aria-selected="false" tabindex="-1">About</button>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Switch colour theme">Theme</button>
+  </div>
+</header>
+
+<div class="banner" id="banner" hidden></div>
+
+<main id="main">
+  <section id="v-replay" role="tabpanel" aria-labelledby="t-replay">
+    <div class="picker">
+      <label for="match">Match</label>
+      <select id="match"></select>
+      <button type="button" id="random" class="ghost">Random match</button>
+    </div>
+
+    <div class="scoreboard" id="scoreboard" aria-live="off"></div>
+
+    <div class="reading" id="reading"></div>
+
+    <figure class="chartwrap">
+      <svg id="chart" viewBox="0 0 900 320" role="img" aria-label="Win probability over the match" preserveAspectRatio="none"></svg>
+      <figcaption id="chart-cap" class="sr"></figcaption>
+    </figure>
+
+    <div class="controls">
+      <button type="button" id="play" class="primary" aria-label="Play replay">Play</button>
+      <button type="button" id="back" class="ghost" aria-label="Back one ball">Back</button>
+      <button type="button" id="fwd" class="ghost" aria-label="Forward one ball">Next ball</button>
+      <label class="spd">Speed
+        <select id="speed"><option value="260">Slow</option><option value="110" selected>Normal</option><option value="30">Fast</option></select>
+      </label>
+      <input type="range" id="scrub" min="0" max="0" value="0" aria-label="Position in the match">
+    </div>
+
+    <p class="now" id="now" aria-live="polite"></p>
+
+    <div class="turns">
+      <h2>Turning points</h2>
+      <p class="sub">The biggest single balls, up to 12 per match, each moving the win probability by 5 points or more. Select one to jump to it.</p>
+      <ol id="turns" class="turnlist"></ol>
+    </div>
+  </section>
+
+  <section id="v-quality" role="tabpanel" aria-labelledby="t-quality" hidden>
+    <h1>Is the probability honest?</h1>
+    <p class="lede" id="q-lede"></p>
+    <div class="qgrid">
+      <div>
+        <h2>Scores on held-out matches</h2>
+        <p class="sub">Lower is better for Brier score, log loss and calibration error. These matches were not used to train or calibrate the model.</p>
+        <div class="tablewrap"><table id="q-table"></table></div>
+      </div>
+      <div>
+        <h2>Reliability</h2>
+        <p class="sub">When the model says 70%, the batting side should win about 70% of those situations. Closer to the diagonal is better.</p>
+        <svg id="rel" viewBox="0 0 360 360" role="img" aria-label="Reliability curve"></svg>
+      </div>
+    </div>
+    <h2>Accuracy by stage of the innings</h2>
+    <p class="sub">Brier score by stage on held-out matches. Early overs are hardest to predict.</p>
+    <div class="tablewrap"><table id="q-stage"></table></div>
+    <h2>Rules the model must obey</h2>
+    <p class="sub" id="q-mono"></p>
+  </section>
+
+  <section id="v-whatif" role="tabpanel" aria-labelledby="t-whatif" hidden>
+    <h1>What if the match is here?</h1>
+    <p class="lede">Set a situation and read the batting side's chance of winning, from the same model that powers the replay.</p>
+    <form class="wi" id="wi" onsubmit="return false">
+      <label>Innings
+        <select id="wi-inn"><option value="1">First innings</option><option value="2" selected>Chasing</option></select>
+      </label>
+      <label>Runs scored <input type="number" id="wi-runs" min="0" max="300" value="92"></label>
+      <label>Wickets lost <input type="number" id="wi-wkts" min="0" max="10" value="3"></label>
+      <label>Balls bowled <input type="number" id="wi-balls" min="0" max="120" value="72"></label>
+      <label id="wi-t-l">Target <input type="number" id="wi-target" min="1" max="300" value="164"></label>
+      <label hidden>Batting side's strength edge
+        <input type="range" id="wi-edge" min="-200" max="200" value="0" step="10">
+        <span class="hint" id="wi-edge-v">Even match</span>
+      </label>
+    </form>
+    <div class="wi-out" id="wi-out" aria-live="polite"></div>
+  </section>
+
+  <section id="v-live" role="tabpanel" aria-labelledby="t-live" hidden>
+    <h1>Score a match live</h1>
+    <p class="lede">Start a match, then tap each ball as it happens. The API updates the win probability after every delivery. Needs the Chase API.</p>
+    <div class="wi">
+      <label>Team A <input type="text" id="live-a" value="Team A" maxlength="40"></label>
+      <label>Team B <input type="text" id="live-b" value="Team B" maxlength="40"></label>
+      <label>Batting first <select id="live-first"><option value="a">Team A</option><option value="b">Team B</option></select></label>
+      <label>&nbsp;<button type="button" class="primary" id="live-start">Start match</button></label>
+    </div>
+    <div id="live-pad" hidden>
+      <div class="controls" id="live-btns"></div>
+      <div class="controls"><button type="button" class="ghost" id="live-inn">Start second innings</button></div>
+    </div>
+    <div id="live-out" aria-live="polite"></div>
+  </section>
+
+  <section id="v-about" role="tabpanel" aria-labelledby="t-about" hidden>
+    <h1>How Chase works</h1>
+    <div class="prose" id="about"></div>
+  </section>
+</main>
+
+<footer class="foot"><span id="foot-src"></span></footer>
+
+<script src="config.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
