@@ -21,6 +21,7 @@ button,select,input{font:inherit;color:inherit}
 
 .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .top-in{max-width:1040px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px}
+.mark-logo{width:30px;height:30px;flex:none;display:block}
 .mark{font:700 26px/1 var(--num);letter-spacing:.01em;text-decoration:none;display:flex;align-items:center;gap:8px}
 .mark-ball{width:14px;height:14px;border-radius:50%;background:var(--a);box-shadow:inset -3px -3px 0 rgba(0,0,0,.2),inset 2px 2px 0 rgba(255,255,255,.28)}
 .tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
