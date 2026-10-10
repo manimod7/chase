@@ -104,11 +104,17 @@
     return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
   }
   // Colours for a pair of teams in one theme (0 light, 1 dark). If both teams wear a similar
-  // colour (two blues, two reds), the second team switches to its secondary colour.
+  // colour (two blues, two reds), one of them switches to its secondary colour. RCB, CSK, MI and RR
+  // always keep their main colour, so the other team switches; if neither is protected, the second one does.
+  var KEEP_MAIN = ['rcb', 'csk', 'mi', 'rr'];
   function pairColours(teams, theme) {
     var ka = teamKey(teams[0]), kb = teamKey(teams[1]);
     var a = ka ? TEAM_COLOURS[ka][theme] : null, b = kb ? TEAM_COLOURS[kb][theme] : null;
-    if (a && b && colourGap(a, b) < 150) b = TEAM_COLOURS[kb][theme + 2];
+    if (a && b && colourGap(a, b) < 150) {
+      var pa = KEEP_MAIN.indexOf(ka) >= 0, pb = KEEP_MAIN.indexOf(kb) >= 0;
+      if (pa && pb) return [a, b];
+      if (pb) a = TEAM_COLOURS[ka][theme + 2]; else b = TEAM_COLOURS[kb][theme + 2];
+    }
     return [a, b];
   }
   function setTeamColours(el, teams) {
