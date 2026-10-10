@@ -69,7 +69,54 @@
     if (need <= 0) return p.bat + ' ' + p.runs + '/' + p.wkts + ', target reached';
     return p.bat + ' ' + p.runs + '/' + p.wkts + ', need ' + need + ' off ' + left + (left === 1 ? ' ball' : ' balls');
   }
-  function teamColor(name) { return name === S.match.teams[0] ? 'var(--a)' : 'var(--b)'; }
+
+  /* ---------- team colours ---------- */
+  // [light-theme primary, dark-theme primary, light-theme secondary, dark-theme secondary]
+  var TEAM_COLOURS = {
+    csk:  ['#d99a00', '#ffcb05', '#0b7bd1', '#4fb0ff'],  // Chennai Super Kings: yellow, blue
+    mi:   ['#005db4', '#4a9bea', '#c99a2e', '#e8c060'],  // Mumbai Indians: blue, gold
+    rcb:  ['#d3161c', '#ff5a52', '#b8892b', '#e5be5c'],  // Royal Challengers: red, black and gold
+    kkr:  ['#4b2a83', '#a27be0', '#b8962e', '#e3c467'],  // Kolkata Knight Riders: purple, gold
+    dc:   ['#1a56b0', '#5c97e6', '#e3202b', '#ff6b6f'],  // Delhi Capitals: blue, red
+    pbks: ['#d71920', '#ff5656', '#7c828a', '#c4c9cf'],  // Punjab Kings: red, silver
+    rr:   ['#e4007c', '#ff5cad', '#2a4ba8', '#6f8fea'],  // Rajasthan Royals: pink, royal blue
+    srh:  ['#f26522', '#ff8a3d', '#2b2b2b', '#e8e1d6'],  // Sunrisers Hyderabad: orange, black
+    gt:   ['#1c2b5e', '#6e8ae8', '#b58a33', '#e1b85a'],  // Gujarat Titans: navy, gold
+    lsg:  ['#0a9aae', '#2fc8dc', '#e8731a', '#ff9a4d']   // Lucknow Super Giants: teal, orange
+  };
+  function teamKey(name) {
+    var n = String(name || '').toLowerCase();
+    if (/chennai/.test(n)) return 'csk';
+    if (/mumbai/.test(n)) return 'mi';
+    if (/bengal|bangalore|royal challengers/.test(n)) return 'rcb';
+    if (/kolkata/.test(n)) return 'kkr';
+    if (/delhi/.test(n)) return 'dc';
+    if (/punjab/.test(n)) return 'pbks';
+    if (/rajasthan/.test(n)) return 'rr';
+    if (/sunrisers|hyderabad/.test(n)) return 'srh';
+    if (/gujarat/.test(n)) return 'gt';
+    if (/lucknow/.test(n)) return 'lsg';
+    return null;
+  }
+  function hexRGB(h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
+  function colourGap(x, y) {            // weighted RGB distance, close to how different two colours look
+    var p = hexRGB(x), q = hexRGB(y), rm = (p[0] + q[0]) / 2, dr = p[0] - q[0], dg = p[1] - q[1], db = p[2] - q[2];
+    return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
+  }
+  // Colours for a pair of teams in one theme (0 light, 1 dark). If both teams wear a similar
+  // colour (two blues, two reds), the second team switches to its secondary colour.
+  function pairColours(teams, theme) {
+    var ka = teamKey(teams[0]), kb = teamKey(teams[1]);
+    var a = ka ? TEAM_COLOURS[ka][theme] : null, b = kb ? TEAM_COLOURS[kb][theme] : null;
+    if (a && b && colourGap(a, b) < 150) b = TEAM_COLOURS[kb][theme + 2];
+    return [a, b];
+  }
+  function setTeamColours(el, teams) {
+    var vars = ['--ta-l', '--ta-d', '--tb-l', '--tb-d'];
+    var l = pairColours(teams, 0), d = pairColours(teams, 1), v = [l[0], d[0], l[1], d[1]];
+    vars.forEach(function (name, i) { if (v[i]) el.style.setProperty(name, v[i]); else el.style.removeProperty(name); });
+  }
+  function teamColor(name) { return name === S.match.teams[0] ? 'var(--ta,var(--a))' : 'var(--tb,var(--b))'; }
 
   /* ---------- match loading ---------- */
   function swingsOf(pts) {
@@ -85,6 +132,7 @@
   function useMatch(m, pts, swings, ball) {
     pause();
     S.match = m;
+    setTeamColours($('v-replay'), m.teams);
     S.pts = pts;
     S.swings = swings;
     S.cur = Math.max(0, Math.min(ball || 0, S.pts.length - 1));
@@ -193,8 +241,8 @@
     var line = S.pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.pA).toFixed(1); }).join('');
     var area = line + 'L' + x(N).toFixed(1) + ' ' + y(.5) + 'L' + x(0).toFixed(1) + ' ' + y(.5) + 'Z';
     function layer(group, opacity) {
-      group.appendChild(el('path', { d: area, fill: 'var(--a)', 'fill-opacity': opacity, 'clip-path': 'url(#cUp)' }));
-      group.appendChild(el('path', { d: area, fill: 'var(--b)', 'fill-opacity': opacity, 'clip-path': 'url(#cLo)' }));
+      group.appendChild(el('path', { d: area, fill: 'var(--ta,var(--a))', 'fill-opacity': opacity, 'clip-path': 'url(#cUp)' }));
+      group.appendChild(el('path', { d: area, fill: 'var(--tb,var(--b))', 'fill-opacity': opacity, 'clip-path': 'url(#cLo)' }));
     }
     var ghost = el('g', {}); layer(ghost, .13); svg.appendChild(ghost);
     svg.appendChild(el('path', { d: line, fill: 'none', stroke: 'var(--muted)', 'stroke-opacity': .5, 'stroke-width': 1 }));
@@ -215,8 +263,8 @@
         svg.appendChild(el('text', { x: x(i), y: H - 8, 'text-anchor': i === N ? 'end' : 'middle' }, 'over ' + L / 6));
       });
     });
-    svg.appendChild(el('text', { x: padL + 2, y: y(1) + 12, class: 'tn', style: 'fill:var(--a)' }, S.match.teams[0]));
-    svg.appendChild(el('text', { x: padL + 2, y: y(0) - 5, class: 'tn', style: 'fill:var(--b)' }, S.match.teams[1]));
+    svg.appendChild(el('text', { x: padL + 2, y: y(1) + 12, class: 'tn', style: 'fill:var(--ta,var(--a))' }, S.match.teams[0]));
+    svg.appendChild(el('text', { x: padL + 2, y: y(0) - 5, class: 'tn', style: 'fill:var(--tb,var(--b))' }, S.match.teams[1]));
     // swing markers
     S.swings.forEach(function (s) {
       svg.appendChild(el('circle', { cx: x(s.i), cy: y(S.pts[s.i].pA), r: 3.2, fill: 'var(--panel)', stroke: 'var(--ink)', 'stroke-width': 1.5 }));
@@ -393,6 +441,7 @@
     var out = $('live-out');
     if (!L.sid) { out.innerHTML = ''; return; }
     var p = L.pts[L.pts.length - 1], a = L.teams[0], b = L.teams[1], pa = pct(p.pA);
+    setTeamColours(out, L.teams);
     var spark = '';
     if (L.pts.length > 1) {
       var W = 600, H = 90, n = L.pts.length - 1;

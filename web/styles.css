@@ -57,9 +57,9 @@ select,input[type=number],input[type=text]{background:var(--panel);border:1px so
 .pr .n{font:700 clamp(54px,13vw,104px)/.9 var(--num);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .pr .l{font-size:14px;color:var(--muted);margin-top:4px}
 .pr.right{text-align:right}
-.pr.a .n{color:var(--a)}.pr.b .n{color:var(--b)}
-.bar{grid-column:1/-1;height:8px;border-radius:99px;overflow:hidden;background:var(--b);margin-top:14px;display:flex}
-.bar i{display:block;background:var(--a);height:100%;transition:width .12s linear}
+.pr.a .n{color:var(--ta,var(--a))}.pr.b .n{color:var(--tb,var(--b))}
+.bar{grid-column:1/-1;height:8px;border-radius:99px;overflow:hidden;background:var(--tb,var(--b));margin-top:14px;display:flex}
+.bar i{display:block;background:var(--ta,var(--a));height:100%;transition:width .12s linear}
 
 .chartwrap{margin:18px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 8px 6px}
 #chart{width:100%;height:auto;aspect-ratio:900/320;display:block;touch-action:none;cursor:crosshair}
@@ -77,7 +77,7 @@ select,input[type=number],input[type=text]{background:var(--panel);border:1px so
 .turnlist li button:hover{background:var(--panel)}
 .turnlist .ov{font:600 20px var(--num);color:var(--muted)}
 .turnlist .dl{font:700 22px var(--num);font-variant-numeric:tabular-nums}
-.turnlist .dl.a{color:var(--a)}.turnlist .dl.b{color:var(--b)}
+.turnlist .dl.a{color:var(--ta,var(--a))}.turnlist .dl.b{color:var(--tb,var(--b))}
 .turnlist .tx small{display:block;color:var(--muted);font-size:13.5px}
 .empty{color:var(--muted);padding:12px 0}
 
@@ -109,3 +109,8 @@ td.best{box-shadow:inset 0 -2px 0 var(--ok)}
 }
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 input[type=range]{accent-color:var(--ink)}
+
+/* team colours: set per match by app.js, falling back to the default pair */
+#v-replay,#live-out{--ta:var(--ta-l,var(--a));--tb:var(--tb-l,var(--b))}
+:root[data-theme=dark] #v-replay,:root[data-theme=dark] #live-out{--ta:var(--ta-d,var(--a));--tb:var(--tb-d,var(--b))}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #v-replay,:root:not([data-theme=light]) #live-out{--ta:var(--ta-d,var(--a));--tb:var(--tb-d,var(--b))}}
