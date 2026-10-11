@@ -87,7 +87,8 @@ select,input[type=number],input[type=text]{background:var(--panel);border:1px so
 .turnlist .tx small{display:block;color:var(--muted);font-size:13.5px}
 .empty{color:var(--muted);padding:12px 0}
 
-.qgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:start}
+.qgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:start}
+.qgrid>*{min-width:0}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
 th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
@@ -108,7 +109,7 @@ td.best{box-shadow:inset 0 -2px 0 var(--ok)}
 .foot{max-width:1040px;margin:0 auto;padding:18px 16px 40px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
 
 @media (max-width:760px){
-  .qgrid{grid-template-columns:1fr}
+  .qgrid{grid-template-columns:minmax(0,1fr)}
   .top-in{flex-wrap:wrap;gap:6px 12px}.tabs{order:3;width:100%;margin-left:0}
   .theme{margin-left:auto}
   .turnlist li button{grid-template-columns:52px 1fr auto}
