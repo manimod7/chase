@@ -18,6 +18,7 @@
 
   /* ---------- theme and tabs ---------- */
   function setTheme(t) {
+    var r=document.documentElement;r.classList.add('tt');setTimeout(function(){r.classList.remove('tt')},450);
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('chase-theme', t); } catch (e) {}
   }
@@ -50,6 +51,18 @@
       var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (n) { e.preventDefault(); showTab(TABS[(i + n + TABS.length) % TABS.length], true); }
     });
+  });
+
+  /* keyboard shortcuts for the replay: Space play or pause, arrows step, R random match */
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var tg = e.target, tag = tg && tg.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON' || (tg && tg.isContentEditable)) return;
+    if ($('v-replay').hidden) return;
+    if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); $('fwd').click(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); $('back').click(); }
+    else if (e.key === 'r' || e.key === 'R') { $('random').click(); }
   });
 
   /* ---------- ball description ---------- */

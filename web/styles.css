@@ -115,3 +115,28 @@ input[type=range]{accent-color:var(--ink)}
 #v-replay,#live-out{--ta:var(--ta-l,var(--a));--tb:var(--tb-l,var(--b))}
 :root[data-theme=dark] #v-replay,:root[data-theme=dark] #live-out{--ta:var(--ta-d,var(--a));--tb:var(--tb-d,var(--b))}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) #v-replay,:root:not([data-theme=light]) #live-out{--ta:var(--ta-d,var(--a));--tb:var(--tb-d,var(--b))}}
+
+/* animated logos: Chase line draws start to end, SwingLab bat swings and hits the ball */
+.cl-line{stroke-dasharray:1;animation:clDraw 5s ease-in-out infinite}
+@keyframes clDraw{0%{stroke-dashoffset:1;opacity:1}38%,90%{stroke-dashoffset:0;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+.cl-dot{transform-box:fill-box;transform-origin:center;animation:clDot 5s ease-in-out infinite}
+@keyframes clDot{0%,35%{transform:scale(0);opacity:0}41%{transform:scale(1.7);opacity:1}48%,90%{transform:scale(1);opacity:1}98%,100%{transform:scale(1);opacity:0}}
+.sl-bat{transform-box:view-box;transform-origin:24px 24px;transform:rotate(40deg);animation:slBat 4.4s infinite}
+@keyframes slBat{0%,30%{transform:rotate(40deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}48%{transform:rotate(-28deg);animation-timing-function:cubic-bezier(.6,0,.9,.4)}57%{transform:rotate(106deg);animation-timing-function:ease-out}64%{transform:rotate(112deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}84%,100%{transform:rotate(40deg)}}
+.sl-ball{transform-box:fill-box;transform-origin:center;animation:slBall 4.4s infinite}
+@keyframes slBall{0%,56%{transform:translate(0,0) scale(1);opacity:1}57%{transform:translate(0,0) scale(1.15);opacity:1;animation-timing-function:cubic-bezier(.2,.6,.4,1)}74%{transform:translate(15px,-24px) scale(.45);opacity:0}75%,88%{transform:translate(0,0) scale(1);opacity:0}100%{transform:translate(0,0) scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.cl-line,.cl-dot,.sl-bat,.sl-ball{animation:none}.cl-line{stroke-dashoffset:0}.cl-dot{transform:none}}
+
+/* smooth motion layer */
+html{scroll-behavior:smooth}
+button,select,input,textarea,.tabs [role=tab],a{transition:background-color .2s,border-color .2s,color .2s,box-shadow .2s,opacity .2s,transform .18s}
+button:active:not(:disabled){transform:scale(.98)}
+[role=tabpanel]:not([hidden]){animation:smPanel .38s cubic-bezier(.2,.7,.2,1)}
+@keyframes smPanel{from{opacity:0;transform:translateY(8px)}}
+@media(prefers-reduced-motion:no-preference){html.tt,html.tt *,html.tt *::before,html.tt *::after{transition:background-color .35s,color .35s,border-color .35s,box-shadow .35s,fill .35s,stroke .35s!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.kbdhint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.kbdhint kbd{font:inherit;font-size:12px;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--panel,transparent)}
+@media(hover:none){.kbdhint{display:none}}
+a,button{-webkit-tap-highlight-color:transparent}button,select,[role=tab]{touch-action:manipulation}
